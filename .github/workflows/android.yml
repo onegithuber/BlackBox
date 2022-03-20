@@ -43,7 +43,7 @@ jobs:
           done  
           echo "message=$result" >> $GITHUB_ENV
           
-      - name: xxx
+      - name: Make Gradle executable
         run: chmod +x ./gradlew
        
       #编译BlackBox32
