@@ -1,0 +1,92 @@
+name: Build & Release Debug APK
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      commits: ${{toJSON(github.event.commits)}}
+    steps:
+      - uses: actions/checkout@v1
+      - name: set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Get commits message
+        run: |
+          # 下载JSON解析依赖
+          wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+          chmod +x ./jq
+          cat > commits.json <<EOF
+          ${commits}
+          EOF
+          
+          # 解析JSON
+          index=1
+          result=""
+          message=$(cat ./commits.json | ./jq '.[0].message')
+          until [[ $message == "null" ]]
+          do
+            message=${message//'\n\n'/'<br>'}
+            message=${message//'\n'/'<br>'}
+            if [[ $result == "" ]]
+            then
+               result=${message:1:-1}
+            else
+               result=$result"<li/>"${message:1:-1}
+            fi
+            message=$(cat ./commits.json | ./jq '.['$index'].message')
+            let index++
+          done  
+          echo "message=$result" >> $GITHUB_ENV
+          
+      - name: xxx
+        run: chmod +x ./gradlew
+       
+      #编译BlackBox32
+      - name: Build BlackBox32
+        run: ./gradlew assembleBlackBox32BetaDebug
+      #编译BlackBox64
+      - name: Build BlackBox64
+        run: ./gradlew assembleBlackBox64BetaDebug
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: Canary-v${{ github.run_number }}
+          release_name: "Canary build version: v${{ github.run_number }}"
+          body: |
+            ### Changelog
+            - ${{env.message}}
+          draft: false
+          prerelease: false
+
+      #上传BlackBox32
+      - name: Upload BlackBox32
+        id: upload-blackbox-32
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./app/build/outputs/apk/BlackBox32/debug/app-BlackBox32-debug.apk
+          asset_name: app-BlackBox32-debug.apk
+          asset_content_type: application/zip
+
+      #上传BlackBox64
+      - name: Upload BlackBox64
+        id: upload-blackbox-64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./app/build/outputs/apk/BlackBox64/debug/app-BlackBox64-debug.apk
+          asset_name: app-BlackBox64-debug.apk
+          asset_content_type: application/zip
