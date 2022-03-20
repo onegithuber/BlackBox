@@ -1,8 +1,6 @@
 name: Merge upstream branches
 on:
   schedule:
-     # actually, ~5 minutes is the highest
-     # effective frequency you will get
     - cron: '*/30 * * * *'
 jobs:
   Merge:
@@ -13,17 +11,10 @@ jobs:
         run: |
           git config --global user.name ${{ secrets.USER_NAME }}
           git config --global user.email ${{ secrets.USER_EMAIL }}
-          # "git checkout master" is unnecessary, already here by default
-          git pull --unshallow  # this option is very important, you would get
-                                # complains about unrelated histories without it.
-                                # (but actions/checkout@v2 can also be instructed
-                                # to fetch all git depth right from the start)
+          git pull --unshallow
           git remote add upstream https://github.com/FBlackBox/BlackBox.git
           git fetch upstream
-          # Neither forget the -b opt,
-          # the feature/x ref is ambiguous at this stage
-          # git checkout -b master origin/master
           git checkout master
           git merge --no-edit upstream/master
           git push origin master
-          # etc
+
