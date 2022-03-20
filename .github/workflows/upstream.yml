@@ -15,6 +15,6 @@ jobs:
           git remote add upstream https://github.com/FBlackBox/BlackBox.git
           git fetch upstream
           git checkout master
-          git merge --no-edit upstream/master
+          git merge upstream/master
           git push origin master
 
