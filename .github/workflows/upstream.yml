@@ -1,7 +1,5 @@
 name: Merge upstream branches
 on:
-  push:
-    branches: [ master ]
   schedule:
      # actually, ~5 minutes is the highest
      # effective frequency you will get
