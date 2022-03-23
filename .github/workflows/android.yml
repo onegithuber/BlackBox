@@ -27,6 +27,7 @@ jobs:
           # 解析JSON
           index=1
           result=""
+          merge="\"Merge branch 'FBlackBox:master' into master\""
           message=$(cat ./commits.json | ./jq '.[0].message')
           until [[ $message == "null" ]]
           do
@@ -40,6 +41,13 @@ jobs:
             fi
             message=$(cat ./commits.json | ./jq '.['$index'].message')
             let index++
+            
+            # 移除merge时自动生成的Commit Message
+            if [[ $message == $merge ]]
+            then
+               message=$(cat ./commits.json | ./jq '.['$index'].message')
+               let index++
+            fi
           done  
           echo "message=$result" >> $GITHUB_ENV
           
