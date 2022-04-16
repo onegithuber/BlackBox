@@ -57,9 +57,19 @@ jobs:
       #编译BlackBox32
       - name: Build BlackBox32
         run: ./gradlew assembleBlackBox32BetaDebug
+        
+      #签名BlackBox32
+      - name: Sign BlackBox32
+        run: java -jar ./apksigner.jar sign --ks ./BlackBox.jks --ks-key-alias blackbox --ks-pass pass:blackbox --out ./app/build/outputs/apk/BlackBox32Beta/debug/app-BlackBox32Beta-debug-signed.apk ./app/build/outputs/apk/BlackBox32Beta/debug/app-BlackBox32Beta-debug.apk
+        
       #编译BlackBox64
       - name: Build BlackBox64
         run: ./gradlew assembleBlackBox64BetaDebug
+        
+      #签名BlackBox64
+      - name: Sign BlackBox64
+        run: java -jar ./apksigner.jar sign --ks ./BlackBox.jks --ks-key-alias blackbox --ks-pass pass:blackbox --out ./app/build/outputs/apk/BlackBox64Beta/debug/app-BlackBox64Beta-debug-signed.apk ./app/build/outputs/apk/BlackBox64Beta/debug/app-BlackBox64Beta-debug.apk
+
 
       - name: Create Release
         id: create_release
@@ -83,7 +93,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./app/build/outputs/apk/BlackBox32Beta/debug/app-BlackBox32Beta-debug.apk
+          asset_path: ./app/build/outputs/apk/BlackBox32Beta/debug/app-BlackBox32Beta-debug-signed.apk
           asset_name: app-BlackBox32-debug.apk
           asset_content_type: application/zip
 
@@ -95,6 +105,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./app/build/outputs/apk/BlackBox64Beta/debug/app-BlackBox64Beta-debug.apk
+          asset_path: ./app/build/outputs/apk/BlackBox64Beta/debug/app-BlackBox64Beta-debug-signed.apk
           asset_name: app-BlackBox64-debug.apk
           asset_content_type: application/zip
